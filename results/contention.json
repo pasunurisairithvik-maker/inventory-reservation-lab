@@ -1,0 +1,10 @@
+{
+  "requests": 50,
+  "worker_threads": 8,
+  "initial_stock": 10,
+  "accepted": 10,
+  "rejected": 40,
+  "available_stock": 0,
+  "held_quantity": 10,
+  "scope": "One local SQLite database; not a distributed load benchmark."
+}
