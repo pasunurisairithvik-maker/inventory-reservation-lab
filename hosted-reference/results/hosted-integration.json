@@ -1,0 +1,20 @@
+{
+  "preview_api": {
+    "requests": 50,
+    "concurrent_http_clients": 8,
+    "initial_stock": 8,
+    "accepted": 8,
+    "stock_conflicts": 42,
+    "remaining": 0
+  },
+  "checks": {
+    "workspace_isolation": true,
+    "cross_workspace_order_blocked": true,
+    "same_origin_mutations_enforced": true,
+    "http_only_session_cookie": true,
+    "retry_idempotency": true,
+    "bool_quantity_rejected": true,
+    "cancel_and_restock_balanced": true
+  },
+  "scope": "Actual HTTP API against supervised-preview D1 database. Not a production load or latency benchmark."
+}

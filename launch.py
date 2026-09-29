@@ -13,5 +13,5 @@ if __name__=='__main__':
     subprocess.run([str(python),'-m','app.bootstrap'],cwd=root,check=True)
     print('Open http://127.0.0.1:8004 — Ctrl+C to stop. Fictional demo only.',flush=True)
     try:
-        subprocess.run([str(python),'-m','uvicorn','app.main:create_app','--factory','--host','127.0.0.1','--port','8004'],cwd=root,check=True)
+        subprocess.run([str(python),str(root/'serve.py')],cwd=root,check=True)
     except KeyboardInterrupt: pass

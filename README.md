@@ -1,4 +1,6 @@
 # OrderOps — Order Reliability Control Room
+
+Standalone hosted demo and independent Python application. [Open the live demo](https://orderops-rithvik.nehapasunuru0156.chatgpt.site). Read [soft launch notes](docs/SOFT_LAUNCH.md) for runtime differences.
 A complete local Python application for managing inventory, multi-item order reservations, event delivery, and recovery. It expands the original inventory lab into one cohesive portfolio project.
 
 **The problem:** stock checks, order creation, and event delivery fail in different ways. OrderOps keeps each reservation atomic and retains its delivery event even if a background worker stops.
@@ -8,9 +10,9 @@ Python 3.11+ required. From this repository:
 ```bash
 python launch.py
 ```
-The launcher creates a project virtual environment, installs pinned application requirements from PyPI, seeds fictional examples, and serves the dashboard at **http://127.0.0.1:8004**. Initial setup needs internet access; application use does not. Ctrl+C stops the server. On Windows, use `py launch.py` if `python` is unavailable. It does not start an independent worker: use the dashboard's Process next event action or start the worker in a second terminal.
+The launcher creates a project virtual environment, installs pinned application requirements from PyPI, seeds fictional examples, and serves the dashboard at **http://127.0.0.1:8004**. Initial setup needs internet access; application use does not. Ctrl+C stops the server. On Windows, use `py launch.py` if `python` is unavailable. It starts the API and event worker together. The worker runs independently of the browser and delivers saved local events automatically.
 
-Manual setup:
+Manual setup (separate API and worker processes, useful for inspecting failure scenarios):
 ```bash
 python -m venv .venv
 # Windows: .venv\Scripts\activate
@@ -53,10 +55,10 @@ Run `python verify_demo.py` to reproduce both, or use Reliability lab in the das
 python -m unittest discover -s tests -v
 python verify_demo.py
 ```
-Thirty tests currently cover domain correctness, concurrent buyers/workers, recovery, and API integration. The original ten inventory tests still pass. JavaScript syntax was checked separately. Automated browser interaction tests and visual verification are not included; do not infer full UI validation from backend CI. See docs/WALKTHROUGH.md and docs/ARCHITECTURE.md.
+Thirty tests currently cover domain correctness, concurrent buyers/workers, recovery, and API integration. The original ten inventory tests still pass. JavaScript syntax was checked separately. Hosted preview browser flows were checked for create, confirm, and reload persistence; backend CI does not imply complete UI coverage. See docs/WALKTHROUGH.md and docs/ARCHITECTURE.md.
 
 ## Honest boundaries
-Single-host SQLite, one local receiver, no external payment/email, no authentication, no user accounts, and no public deployment. UI lists return the latest 100 records; metrics count all stored records. Price totals are order value, not revenue. No shipping or refunds. Worker events are not guaranteed per-order delivery order; consumers should not treat the feed as an ordered state machine. Production deployment requires access controls, rate limits, migrations, monitoring, and a different concurrency/operations design.
+Single-host SQLite, one local receiver, no external payment/email, no authentication, no user accounts, and no public Python deployment. The separate hosted demo is described in docs/SOFT_LAUNCH.md. UI lists return the latest 100 records; metrics count all stored records. Price totals are order value, not revenue. No shipping or refunds. Worker events are not guaranteed per-order delivery order; consumers should not treat the feed as an ordered state machine. Production deployment requires access controls, rate limits, migrations, monitoring, and a different concurrency/operations design.
 
 The local receiver and order store share a database but delivery and acknowledgement use separate transactions to demonstrate the crash window. At-least-once delivery with a deduplicated local effect is not global exactly-once processing. Expiry runs during requests or worker cycles; no worker means no cleanup while the application is idle.
 

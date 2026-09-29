@@ -5,7 +5,7 @@
 4. Open Event delivery. Process an event. Simulate a delivery failure on a ready event; wait for its retry delay and process it again. Three failed attempts move an event to dead-letter. Replay restores it to pending, retaining its event ID.
 5. Open Reliability lab. Run the stock contention experiment and crash experiment. These use temporary databases and leave dashboard stock unchanged.
 
-No real customer data is needed. No external messages or transactions occur. Process events manually for a visible demo; run `python worker.py` separately for unattended local delivery and expiry.
+No real customer data is needed. No external messages or transactions occur. The one-command launcher starts automatic delivery. For manual failure inspection, start only the API using the manual README commands; start `python worker.py` separately when ready.
 
 ## Interview demonstrations
 - Explain why two independent read-then-write stock checks race, then show the multi-item rollback test.
