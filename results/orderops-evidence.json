@@ -1,0 +1,21 @@
+{
+  "contention": {
+    "experiment": "50 requests / 10 units",
+    "requests": 50,
+    "workers": 8,
+    "accepted": 10,
+    "rejected": 40,
+    "remaining": 0,
+    "balanced": true,
+    "scope": "Local single-host SQLite correctness experiment; not a throughput benchmark."
+  },
+  "crash_recovery": {
+    "experiment": "Crash after delivery / before acknowledgement",
+    "deliveries_attempted": 2,
+    "inbox_rows_before": 1,
+    "inbox_rows_after": 1,
+    "stale_ack_rejected": true,
+    "event_state": "sent",
+    "scope": "At-least-once delivery to a local inbox, deduplicated by event ID; no external payment or email."
+  }
+}

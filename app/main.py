@@ -12,7 +12,9 @@ class Reservation(BaseModel):
 
 def create_app(path=None):
     store = Store(path or os.environ.get('INVENTORY_DB','inventory.db'))
-    api = FastAPI(title='Inventory Reservation Lab')
+    api = FastAPI(title='OrderOps — Order Reliability Lab')
+    from app.ops_api import mount
+    mount(api,store.path)
     @api.get('/inventory')
     def inventory():
         return store.snapshot(time.time())
