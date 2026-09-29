@@ -5,12 +5,15 @@ A complete local Python application for managing inventory, multi-item order res
 
 **The problem:** stock checks, order creation, and event delivery fail in different ways. OrderOps keeps each reservation atomic and retains its delivery event even if a background worker stops.
 
+## External Python hosting
+Render configuration is prepared in [render.yaml](render.yaml). Read [deployment notes](deploy/RENDER.md). Render is not yet provisioned; the live link above is the earlier TypeScript demo. Public Python mode isolates visitors and runs a continuous worker on a persistent disk.
+
 ## Start in one command
 Python 3.11+ required. From this repository:
 ```bash
 python launch.py
 ```
-The launcher creates a project virtual environment, installs pinned application requirements from PyPI, seeds fictional examples, and serves the dashboard at **http://127.0.0.1:8004**. Initial setup needs internet access; application use does not. Ctrl+C stops the server. On Windows, use `py launch.py` if `python` is unavailable. It starts the API and event worker together. The worker runs independently of the browser and delivers saved local events automatically.
+The launcher creates a project virtual environment, installs pinned application requirements from PyPI, seeds fictional examples, and serves the dashboard at **http://127.0.0.1:8004**. Initial setup needs internet access; application use does not. Ctrl+C stops the server. On Windows, use `py launch.py` if `python` is unavailable. It starts the API and event worker together; if either exits unexpectedly, the supervisor stops both so the host can restart the service. The worker runs independently of the browser and delivers saved local events automatically.
 
 Manual setup (separate API and worker processes, useful for inspecting failure scenarios):
 ```bash
@@ -55,7 +58,7 @@ Run `python verify_demo.py` to reproduce both, or use Reliability lab in the das
 python -m unittest discover -s tests -v
 python verify_demo.py
 ```
-Thirty tests currently cover domain correctness, concurrent buyers/workers, recovery, and API integration. The original ten inventory tests still pass. JavaScript syntax was checked separately. Hosted preview browser flows were checked for create, confirm, and reload persistence; backend CI does not imply complete UI coverage. See docs/WALKTHROUGH.md and docs/ARCHITECTURE.md.
+Thirty original tests plus seven public-mode and supervisor tests cover domain correctness, concurrent buyers/workers, recovery, and API integration. The original ten inventory tests still pass. JavaScript syntax was checked separately. Hosted preview browser flows were checked for create, confirm, and reload persistence; backend CI does not imply complete UI coverage. See docs/WALKTHROUGH.md and docs/ARCHITECTURE.md.
 
 ## Honest boundaries
 Single-host SQLite, one local receiver, no external payment/email, no authentication, no user accounts, and no public Python deployment. The separate hosted demo is described in docs/SOFT_LAUNCH.md. UI lists return the latest 100 records; metrics count all stored records. Price totals are order value, not revenue. No shipping or refunds. Worker events are not guaranteed per-order delivery order; consumers should not treat the feed as an ordered state machine. Production deployment requires access controls, rate limits, migrations, monitoring, and a different concurrency/operations design.

@@ -10,11 +10,14 @@ class Reservation(BaseModel):
     request_key: str = Field(min_length=1,max_length=128)
     ttl: int = Field(strict=True,ge=1,le=3600,default=60)
 
-def create_app(path=None):
+def create_app(path=None, max_orders=None):
+    if path is None and os.environ.get("PUBLIC_DEMO") == "1":
+        from app.public_demo import public_app
+        return public_app()
     store = Store(path or os.environ.get('INVENTORY_DB','inventory.db'))
     api = FastAPI(title='OrderOps — Order Reliability Lab')
     from app.ops_api import mount
-    mount(api,store.path)
+    mount(api,store.path,max_orders=max_orders)
     @api.get('/inventory')
     def inventory():
         return store.snapshot(time.time())

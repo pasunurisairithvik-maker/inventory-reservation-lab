@@ -1,6 +1,6 @@
 from pathlib import Path
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, Field
 from app.orders import Orders
 from app.store import Conflict
@@ -19,8 +19,8 @@ class StockBody(BaseModel):
 class WorkBody(BaseModel):
     simulate_failure: bool = False
 
-def mount(api,path):
-    service=Orders(path)
+def mount(api,path,max_orders=None):
+    service=Orders(path,max_orders=max_orders)
     router=APIRouter(prefix='/api')
     def invoke(fn,*args,**kwargs):
         try: return fn(*args,**kwargs)
@@ -28,7 +28,11 @@ def mount(api,path):
         except KeyError as exc: raise HTTPException(404,'Record not found') from exc
         except ValueError as exc: raise HTTPException(422,str(exc)) from exc
     @api.get('/',include_in_schema=False)
-    def dashboard(): return FileResponse(Path(__file__).parent/'static'/'index.html')
+    def dashboard():
+        path=Path(__file__).parent/'static'/'index.html'
+        if max_orders is None: return FileResponse(path)
+        html=path.read_text().replace('● Local learning environment','Isolated browser workspace').replace('href="/docs"','href="https://github.com/pasunurisairithvik-maker/inventory-reservation-lab"').replace('Explore API ↗','View source ↗')
+        return HTMLResponse(html)
     @router.get('/snapshot')
     def snapshot(): return service.snapshot()
     @router.post('/orders')

@@ -7,7 +7,8 @@ from contextlib import contextmanager, closing
 from app.store import Conflict
 
 class Orders:
-    def __init__(self,path,clock=time.time):
+    def __init__(self,path,clock=time.time,max_orders=None):
+        self.max_orders=max_orders
         self.path=str(path)
         self.clock=clock
         with closing(self.connection()) as db:
@@ -143,6 +144,8 @@ class Orders:
             if old:
                 if old['fingerprint']!=fingerprint: raise Conflict('Request key already belongs to a different order')
                 return self.get_order(db,old['id'])
+            if self.max_orders is not None and db.execute("SELECT count(*) FROM ops_orders").fetchone()[0]>=self.max_orders:
+                raise Conflict("Workspace order limit reached")
             rows=[];total=0
             for item in items:
                 product=db.execute('SELECT * FROM ops_products WHERE sku=?',(item['sku'],)).fetchone()
