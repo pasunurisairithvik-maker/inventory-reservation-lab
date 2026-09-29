@@ -17,3 +17,6 @@ Hosted delivery and expiry are request-driven: page refreshes process ready even
 The demo limits each workspace to 100 orders and bounds inputs and successful mutation frequency. There is no production authentication, real commerce, uptime SLA, or claim of large-scale performance. Publication was confirmed by deployment status; browser and API checks ran against the internal preview. Full source permits independent learning and adaptation, although the hosted build requires compatible Worker/D1 infrastructure.
 
 The implementation is AI-assisted. The student should reproduce the experiments, understand the code, and describe their own contributions honestly.
+
+## Zero-budget Python migration
+The external Python deployment now uses Render Free and Neon Free PostgreSQL; no paid disk is configured. See deploy/RENDER.md. It has not yet been provisioned. PostgreSQL uses relational per-workspace schemas and a real Python worker, which pauses when the free web host sleeps. The previous TypeScript live demo and its measured results remain accurately attributed above.

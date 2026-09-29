@@ -42,6 +42,15 @@ class SessionDispatch:
         from app.main import create_app
         return create_app(path, max_orders=100), None, None
 
+    def resolve(self,token):
+        if not re.fullmatch(r'[a-f0-9]{64}',token) or not (self.directory/(token+'.db')).exists():
+            return secrets.token_hex(32)
+        return token
+
+    def prepare_session(self,token,mutation):
+        token=self.resolve(token)
+        return token,*self.prepare(token,mutation)
+
     async def __call__(self, scope, receive, send):
         if scope['type'] != 'http':
             return
@@ -72,9 +81,7 @@ class SessionDispatch:
         try: cookie.load(headers.get(b'cookie',b'').decode('latin1'))
         except CookieError: pass
         token = cookie[COOKIE].value if COOKIE in cookie else ''
-        if not re.fullmatch(r'[a-f0-9]{64}',token) or not (self.directory/(token+'.db')).exists():
-            token = secrets.token_hex(32)
-        app, code, detail = await run_in_threadpool(self.prepare,token,mutation)
+        token,app,code,detail = await run_in_threadpool(self.prepare_session,token,mutation)
         if code: return await reject(code,detail)
         async def replay():
             return {'type':'http.request','body':body,'more_body':False}
@@ -86,7 +93,38 @@ class SessionDispatch:
             await send(message)
         await app(scope,replay,secure_send)
 
+class PostgresDispatch(SessionDispatch):
+    def __init__(self,url):
+        from app.postgres import PostgresStore
+        import psycopg
+        try:self.store=PostgresStore(url)
+        except psycopg.Error:raise RuntimeError('Database initialization failed; check secure configuration') from None
+    def resolve(self,token):
+        if re.fullmatch(r'[a-f0-9]{64}',token) and self.store.exists(token):return token
+        return secrets.token_hex(32)
+    def prepare(self,token,mutation):
+        from app.postgres import CapacityError,QuotaError
+        from app.ops_api import mount
+        try:
+            service=self.store.workspace(token)
+            if mutation:self.store.consume_quota(token)
+            app=FastAPI(docs_url=None,redoc_url=None,openapi_url=None)
+            import psycopg
+            @app.exception_handler(psycopg.Error)
+            async def database_unavailable(request,exc):
+                return JSONResponse({'detail':'Database unavailable. Retry shortly.'},status_code=503)
+            mount(app,max_orders=100,service=service)
+            return app,None,None
+        except CapacityError:return None,503,'Demo workspace capacity reached.'
+        except QuotaError:return None,429,'Demo request limit reached.'
+    def prepare_session(self,token,mutation):
+        import psycopg
+        try:return super().prepare_session(token,mutation)
+        except psycopg.Error:return token,None,503,'Database unavailable. Retry shortly.'
+
 def public_app():
+    if os.environ.get('REQUIRE_DATABASE')=='1' and not os.environ.get('DATABASE_URL'):
+        raise RuntimeError('DATABASE_URL is required for persistent free hosting')
     directory = Path(os.environ.get('DEMO_WORKSPACES','workspaces'))
     app = FastAPI(title='OrderOps',docs_url=None,redoc_url=None,openapi_url=None)
     @app.get('/healthz')
@@ -94,5 +132,6 @@ def public_app():
         heartbeat = directory / 'worker-heartbeat'
         healthy = heartbeat.exists() and time.time()-heartbeat.stat().st_mtime < 120
         return JSONResponse({'status':'ok' if healthy else 'worker_unavailable'},status_code=200 if healthy else 503)
-    app.mount('/',SessionDispatch(directory))
+    dispatch=PostgresDispatch(os.environ['DATABASE_URL']) if os.environ.get('DATABASE_URL') else SessionDispatch(directory)
+    app.mount('/',dispatch)
     return app

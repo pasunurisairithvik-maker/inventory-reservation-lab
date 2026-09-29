@@ -19,8 +19,8 @@ class StockBody(BaseModel):
 class WorkBody(BaseModel):
     simulate_failure: bool = False
 
-def mount(api,path,max_orders=None):
-    service=Orders(path,max_orders=max_orders)
+def mount(api,path=None,max_orders=None,service=None):
+    service=service if service is not None else Orders(path,max_orders=max_orders)
     router=APIRouter(prefix='/api')
     def invoke(fn,*args,**kwargs):
         try: return fn(*args,**kwargs)
@@ -32,6 +32,8 @@ def mount(api,path,max_orders=None):
         path=Path(__file__).parent/'static'/'index.html'
         if max_orders is None: return FileResponse(path)
         html=path.read_text().replace('● Local learning environment','Isolated browser workspace').replace('href="/docs"','href="https://github.com/pasunurisairithvik-maker/inventory-reservation-lab"').replace('Explore API ↗','View source ↗')
+        if getattr(service,'backend',None)=='postgres':
+            html=html.replace('Python · SQLite · FastAPI','Python · PostgreSQL · FastAPI').replace('Portfolio demonstration','Public Python demonstration')
         return HTMLResponse(html)
     @router.get('/snapshot')
     def snapshot(): return service.snapshot()

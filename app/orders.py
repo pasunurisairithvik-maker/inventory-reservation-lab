@@ -7,12 +7,7 @@ from contextlib import contextmanager, closing
 from app.store import Conflict
 
 class Orders:
-    def __init__(self,path,clock=time.time,max_orders=None):
-        self.max_orders=max_orders
-        self.path=str(path)
-        self.clock=clock
-        with closing(self.connection()) as db:
-            db.executescript("""
+    SCHEMA = """
             PRAGMA journal_mode=WAL;
             CREATE TABLE IF NOT EXISTS ops_products(
               sku TEXT PRIMARY KEY,name TEXT NOT NULL,price INTEGER NOT NULL CHECK(price>=0),
@@ -35,7 +30,13 @@ class Orders:
               event_id TEXT PRIMARY KEY,kind TEXT NOT NULL,payload TEXT NOT NULL,received REAL NOT NULL);
             CREATE INDEX IF NOT EXISTS ops_orders_expiry ON ops_orders(state,expires);
             CREATE INDEX IF NOT EXISTS ops_outbox_ready ON ops_outbox(state,due);
-            """)
+                """
+    def __init__(self,path,clock=time.time,max_orders=None):
+        self.max_orders=max_orders
+        self.path=str(path)
+        self.clock=clock
+        with closing(self.connection()) as db:
+            db.executescript(self.SCHEMA)
 
     def connection(self):
         db=sqlite3.connect(self.path,timeout=10)

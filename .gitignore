@@ -5,3 +5,6 @@ __pycache__/
 workspaces/
 *.sqlite
 *.sqlite-*
+.env
+.env.*
+!.env.example

@@ -23,10 +23,22 @@ if __name__=='__main__':
     args=parser.parse_args()
     directory=Path(os.environ.get('DEMO_WORKSPACES','workspaces')) if os.environ.get('PUBLIC_DEMO')=='1' else None
     if directory: directory.mkdir(parents=True,exist_ok=True)
+    remote=None
+    if directory and os.environ.get('DATABASE_URL'):
+        from app.postgres import PostgresStore
+        import psycopg
+        try:remote=PostgresStore()
+        except psycopg.Error:raise SystemExit('Database initialization failed; check secure configuration') from None
     try:
         while True:
-            cycle(sorted(directory.glob('*.db')) if directory else [args.db])
+            if remote:
+                try:remote.work()
+                except psycopg.Error:
+                    logging.warning('Database temporarily unavailable; retrying in 30 seconds')
+                    if args.once:raise SystemExit(1)
+                    time.sleep(30);continue
+            else:cycle(sorted(directory.glob('*.db')) if directory else [args.db])
             if directory:(directory/'worker-heartbeat').touch()
             if args.once:break
-            time.sleep(0.5)
+            time.sleep(30 if remote else 0.5)
     except KeyboardInterrupt:pass

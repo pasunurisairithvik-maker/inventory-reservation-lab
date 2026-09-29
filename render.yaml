@@ -1,23 +1,23 @@
-# Paid resources: do not provision before owner approves costs.
+# Zero-budget portfolio configuration. Keep both provider accounts on Free.
 services:
   - type: web
     name: orderops-python
     runtime: python
-    plan: 0.5c-512mb
+    plan: free
     region: singapore
     branch: main
     buildCommand: pip install -r requirements.txt
     startCommand: python serve.py --host 0.0.0.0
     healthCheckPath: /healthz
     autoDeployTrigger: checksPass
-    disk:
-      name: orderops-data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.12
       - key: PUBLIC_DEMO
         value: "1"
       - key: DEMO_WORKSPACES
-        value: /var/data/workspaces
+        value: /tmp/orderops-runtime
+      - key: REQUIRE_DATABASE
+        value: "1"
+      - key: DATABASE_URL
+        sync: false
