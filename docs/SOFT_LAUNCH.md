@@ -1,6 +1,8 @@
-# OrderOps soft launch
+# OrderOps release history
 
-Live demo: https://orderops-rithvik.nehapasunuru0156.chatgpt.site
+Current external Python application: https://orderops-python.onrender.com/
+
+The following sections describe the historical TypeScript soft launch and its original measurements; they are not measurements of the current Python deployment.
 
 Published 29 September 2026. This public demo runs independently of ChatGPT and the student's laptop. No login is required. Use fictional names only; there are no real payments, messages, or customers.
 
@@ -19,4 +21,4 @@ The demo limits each workspace to 100 orders and bounds inputs and successful mu
 The implementation is AI-assisted. The student should reproduce the experiments, understand the code, and describe their own contributions honestly.
 
 ## Zero-budget Python migration
-The external Python deployment now uses Render Free and Neon Free PostgreSQL; no paid disk is configured. See deploy/RENDER.md. It has not yet been provisioned. PostgreSQL uses relational per-workspace schemas and a real Python worker, which pauses when the free web host sleeps. The previous TypeScript live demo and its measured results remain accurately attributed above.
+The external Python deployment now uses Render Free and Neon Free PostgreSQL; no paid disk is configured. See deploy/RENDER.md. It is deployed at the external Python URL above. PostgreSQL uses relational per-workspace schemas and a real Python worker, which pauses when the free web host sleeps. The previous TypeScript live demo and its measured results remain accurately attributed above.

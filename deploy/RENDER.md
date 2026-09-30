@@ -1,6 +1,6 @@
 # Zero-budget external Python deployment
 
-Status: source and tests prepared; no Render or Neon resources have been provisioned by this project yet. Never claim an onrender.com URL is live without a successful deployment.
+Status: deployed external Python service at https://orderops-python.onrender.com/ using Render Free and dedicated Neon PostgreSQL. Deployment status and health must be rechecked for each release.
 
 ## Free services only
 - Render Free Python web service: `render.yaml` explicitly sets `plan: free`. No disk, paid worker, paid cron, or Render-managed database is requested.
@@ -10,7 +10,7 @@ A custom domain is unnecessary: Render assigns an onrender.com address after dep
 
 ## Secure setup
 1. Connect Render and Neon accounts through their plugins. Installation alone does not prove account access.
-2. Create a Neon Free project near the Render Singapore region. Use its TLS PostgreSQL connection string as Render's private DATABASE_URL value, never in source, chat, screenshots, or CI logs.
+2. Create a Neon Free project near the Render Singapore region. Use its direct (non-pooler) TLS PostgreSQL connection string as Render's private DATABASE_URL value, never in source, chat, screenshots, or CI logs.
 3. Import this repository's Render Blueprint. It creates one Free web service. DATABASE_URL is marked `sync: false` for secure configuration.
 4. REQUIRE_DATABASE=1 prevents silent fallback to disposable SQLite storage if the secret is missing.
 5. Deploy only after CI passes. Confirm the provider-generated HTTPS URL, /healthz, application flows, isolation, and restart persistence.
@@ -27,4 +27,4 @@ Anonymous cookies are HttpOnly, SameSite=Strict, and Secure on HTTPS. Public POS
 ## Verification
 CI starts a disposable PostgreSQL 16 service and runs all Python tests, including real PostgreSQL concurrency, rollback, isolation, quota, crash-after-delivery recovery, and restart persistence checks. Without TEST_DATABASE_URL, PostgreSQL-specific tests explicitly skip; do not claim those tests passed from a SQLite-only run.
 
-Acceptance after real deployment: create an order, retry its request key, confirm/cancel, reload, inspect a different browser, close the browser and let the worker process, restart Render, verify the same workspace survives. These public-host checks remain pending until account access and deployment are available.
+Acceptance after real deployment: create an order, retry its request key, confirm/cancel, reload, inspect a different browser, close the browser and let the worker process, restart Render, verify the same workspace survives. Repeat these checks after deployment changes; do not treat a historical success as an ongoing uptime guarantee.
