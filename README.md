@@ -67,6 +67,6 @@ The local version uses single-host SQLite, one local receiver, no external payme
 
 The local receiver and order store share a database but delivery and acknowledgement use separate transactions to demonstrate the crash window. At-least-once delivery with a deduplicated local effect is not global exactly-once processing. Expiry runs during requests or worker cycles; no worker means no cleanup while the application is idle.
 
-All seed products and aliases are fictional. Initial implementation is AI-assisted. No research novelty, customers, business impact, or independent student authorship is claimed. See STUDENT_GUIDE.md for concrete contributions the student can make and explain.
+All seed products and aliases are fictional. No research novelty, customer usage or business impact is claimed. See STUDENT_GUIDE.md for the implementation walkthrough and extension points.
 
 The original API and demo are preserved. Read docs/INVENTORY_LAB.md to run that smaller lab. Its tables are separate from OrderOps tables.
